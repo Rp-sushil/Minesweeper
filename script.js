@@ -1,15 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
   const grid = document.querySelector(".grid");
+  const flagLeftEle = document.querySelector("#flagsLeft");
+  const resultEle = document.querySelector("#result");
+
   let width = 10;
-  let bombAmount = 20;
+  let bombAmount = 10;
   let squares = [];
   let isGameOver = false;
   let flags = 0;
   let checked = 0;
-  let firstTimeclick = true;
 
   // create the board
   const createBoard = () => {
+    flagLeftEle.innerHTML = bombAmount;
     // get shuffled game array with  random bombs
     const bombsArray = Array(bombAmount).fill("bomb");
     const emptyArray = Array(width * width - bombAmount).fill("valid");
@@ -82,20 +85,18 @@ document.addEventListener("DOMContentLoaded", () => {
         square.classList.add("flag");
         square.innerHTML = "🚩";
         flags++;
+        flagLeftEle.innerHTML = bombAmount - flags;
         if (flags == bombAmount) checkForWin();
       } else {
         square.classList.remove("flag");
         square.innerHTML = "";
         flags--;
+        flagLeftEle.innerHTML = bombAmount - flags;
       }
     }
   };
   // click on square actions
   const click = (square) => {
-    // if(firstTimeclick) {
-    //     createBoard();
-    //     firstTimeclick = false;
-    // }
     let currentId = square.id;
     if (isGameOver) return;
     if (
@@ -107,6 +108,9 @@ document.addEventListener("DOMContentLoaded", () => {
       square.classList.contains("bomb") ||
       checked == width * width - bombAmount - 1
     ) {
+      resultEle.innerHTML = "YOU LOSE!";
+      if (checked == width * width - bombAmount - 1)
+        resultEle.innerHTML = "YOU WIN!";
       gameOver();
     } else {
       let total = square.getAttribute("data");
@@ -125,17 +129,28 @@ document.addEventListener("DOMContentLoaded", () => {
   //check neighbouring squares once square is clicked
   const checkSquare = (square, currentId) => {
     const i = parseInt(currentId);
-    console.log(i, "check square");
     setTimeout(() => {
-      if (square.getAttribute("data") == 0) {
+      if (!square.classList.contains("bomb")) {
         const left = i % width !== 0;
         const right = i % width !== width - 1;
         const top = i >= width;
+        const isLeftEdge = i % width === 0;
+        const isRightEdge = i % width === width - 1;
+        const isTopEdge = i < width;
+        const isBottomEdge = i >= width * width - width;
         const bottom = i < width * width - width;
+        const northEast = !isRightEdge && !isTopEdge;
+        const northWest = !isLeftEdge && !isTopEdge;
+        const southEast = !isRightEdge && !isBottomEdge;
+        const southWest = !isLeftEdge && !isBottomEdge;
         if (left) click(squares[i - 1]);
         if (right) click(squares[i + 1]);
         if (top) click(squares[i - width]);
         if (bottom) click(squares[i + width]);
+        if (northEast) click(squares[i - width + 1]);
+        if (northWest) click(squares[i - width - 1]);
+        if (southEast) click(squares[i + width + 1]);
+        if (southWest) click(squares[i + width - 1]);
       }
     }, 10);
   };
@@ -165,6 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (matches === bombAmount) {
       gameOver();
+      resultEle.innerHTML = "YOU WIN!";
       console.log("YOU WIN!");
     }
   };
