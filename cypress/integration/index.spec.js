@@ -100,11 +100,22 @@ describe("Test-1", () => {
   });
   it("Should be able to show correct number of flags", () => {
     cy.visit("./index.html");
-    cy.visit("./index.html");
     cy.get(".bomb").each(($el, index, $list) => {
       cy.wrap($el).trigger("contextmenu");
       if (index % 2 == 0) cy.wrap($el).trigger("contextmenu");
     });
     cy.get("#flagsLeft").should("contain", 5);
+  });
+  it("Should not able to add more than 10 flags", () => {
+    cy.visit("./index.html");
+    let i = 0;
+    cy.get(".valid").each(($el, index, $list) => {
+      if (i < 11) {
+        cy.wrap($el).trigger("contextmenu");
+        i++;
+      }
+    });
+    cy.get("#flagsLeft").should("contain", 0);
+    cy.get(".flag").should("have.length", 10);
   });
 });
